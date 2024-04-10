@@ -2,10 +2,10 @@
 def get_N(sortedLength_LIST, N):
     totalLength = sum(sortedLength_LIST)
     sumLength = 0
-    for length in sortedLength_LIST:
+    for idx, length in enumerate(sortedLength_LIST):
         sumLength += length
         if float(sumLength) / totalLength > (float(N)/100):
-            return length
+            return length, idx
 #####################################################################################
 from optparse import OptionParser
 import sys
@@ -43,8 +43,8 @@ print('Number of contigs:' + '\t' + str(contigN))
 print('Total assembly length:' + '\t' + str(totalAssemblyLength))
 print('Min contig length:' + '\t' + str(minContigLength))
 print('Max contig length:' + '\t' + str(maxContigLength))
-print('Contig N50:' + '\t' + str(get_N(sortedContigLength_LIST, 50)))
-print('Contig N90:' + '\t' + str(get_N(sortedContigLength_LIST, 90)))
+print('Contig N50:' + '\t' + '\t'.join(get_N(sortedContigLength_LIST, 50)))
+print('Contig N90:' + '\t' + '\t'.join(get_N(sortedContigLength_LIST, 90)))
 
 import math
 
