@@ -43,8 +43,8 @@ print('Number of contigs:' + '\t' + str(contigN))
 print('Total assembly length:' + '\t' + str(totalAssemblyLength))
 print('Min contig length:' + '\t' + str(minContigLength))
 print('Max contig length:' + '\t' + str(maxContigLength))
-print('Contig N50:' + '\t' + '\t'.join(get_N(sortedContigLength_LIST, 50)))
-print('Contig N90:' + '\t' + '\t'.join(get_N(sortedContigLength_LIST, 90)))
+print('Contig N50:' + '\t' + '\t'.join(map(str, get_N(sortedContigLength_LIST, 50))))
+print('Contig N90:' + '\t' + '\t'.join(map(str, get_N(sortedContigLength_LIST, 90))))
 
 import math
 
