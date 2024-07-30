@@ -46,6 +46,13 @@ print('Max contig length:' + '\t' + str(maxContigLength))
 print('Contig N50:' + '\t' + '\t'.join(map(str, get_N(sortedContigLength_LIST, 50))))
 print('Contig N90:' + '\t' + '\t'.join(map(str, get_N(sortedContigLength_LIST, 90))))
 
+fout = open(infile + '.' + 'lengthDistribution', 'w')
+for N in range(1, 101):
+    N_length = get_N(sortedContigLength_LIST, N)
+    fout.write(str(N) + '\t' + str(N_length) + '\n')
+fout.close()
+
+
 import math
 
 logCount_LIST = [0]*(int(math.log2(maxContigLength)) + 1)
