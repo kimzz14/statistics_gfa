@@ -4,8 +4,8 @@ def get_N(sortedLength_LIST, N):
     sumLength = 0
     for idx, length in enumerate(sortedLength_LIST):
         sumLength += length
-        if float(sumLength) / totalLength > (float(N)/100):
-            return length, idx
+        if float(sumLength) / totalLength >= (float(N)/100):
+            return length, idx+1
 #####################################################################################
 from optparse import OptionParser
 import sys
@@ -49,7 +49,7 @@ print('Contig N90:' + '\t' + '\t'.join(map(str, get_N(sortedContigLength_LIST, 9
 fout = open(infile + '.' + 'lengthDistribution', 'w')
 for N in range(1, 101):
     N_length = get_N(sortedContigLength_LIST, N)
-    fout.write(str(N) + '\t' + str(N_length) + '\n')
+    fout.write(str(N) + '\t' + '\t'.join(map(str,(N_length))) + '\n')
 fout.close()
 
 
