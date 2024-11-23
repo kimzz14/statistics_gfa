@@ -1,11 +1,41 @@
 #####################################################################################
-def get_N(sortedLength_LIST, N):
-    totalLength = sum(sortedLength_LIST)
-    sumLength = 0
-    for idx, length in enumerate(sortedLength_LIST):
-        sumLength += length
-        if float(sumLength) / totalLength >= (float(N)/100):
-            return length, idx+1
+class Statistics_Length:
+    def __init__(self, length_LIST):
+        self.length_LIST = length_LIST
+
+        self.sortedLength_LIST = sorted(self.length_LIST, reverse=True)
+        self.totalLength = sum(self.sortedLength_LIST)
+
+        self.maxLength = self.sortedLength_LIST[0]
+        self.minLength = self.sortedLength_LIST[-1]
+
+    def get_total(self):
+        return self.totalLength
+    
+    def get_lengthN(self):
+        return len(self.sortedLength_LIST)
+
+    def get_max(self):
+        return self.maxLength
+    
+    def get_min(self):
+        return self.minLength
+
+    def get_N(self, N):
+        sumLength = 0
+        for idx, length in enumerate(self.sortedLength_LIST):
+            sumLength += length
+            if float(sumLength) / self.totalLength >= (float(N)/100):
+                return length, idx+1
+
+    def get_count(self, func):
+        count_LIST = [0]*(int(func(self.maxLength)) + 1)
+        sum_LIST   = [0]*(int(func(self.maxLength)) + 1)
+        for length in self.sortedLength_LIST:
+            countIDX = int(func(length))
+            count_LIST[countIDX] += 1
+            sum_LIST[countIDX]   += length
+        return count_LIST, sum_LIST
 #####################################################################################
 from optparse import OptionParser
 import sys
@@ -21,48 +51,56 @@ if opt.INPUT == None:
     sys.exit()
 
 infile = opt.INPUT
+
+#length_LIST
+length_LIST = []
+
 fin = open(infile)
-contigLength_LIST = []
 for line in fin:
     if line[0] == 'S':
         mylist = line.rstrip('\n').split('\t')
         tag, contigName, contigSeq = line.rstrip('\n').split('\t')[0:3]
         contigLength = len(contigSeq)
-        contigLength_LIST += [contigLength]
-    else:
-        pass
+        length_LIST += [contigLength]
+fin.close()
 
-contigN = len(contigLength_LIST)
-totalAssemblyLength = sum(contigLength_LIST)
-minContigLength = min(contigLength_LIST)
-maxContigLength = max(contigLength_LIST)
+#Statistics_Length
+statistics_Length = Statistics_Length(length_LIST)
 
-sortedContigLength_LIST = sorted(contigLength_LIST, reverse=True)
-
-print('Number of contigs:' + '\t' + str(contigN))
-print('Total assembly length:' + '\t' + str(totalAssemblyLength))
-print('Min contig length:' + '\t' + str(minContigLength))
-print('Max contig length:' + '\t' + str(maxContigLength))
-print('Contig N50:' + '\t' + '\t'.join(map(str, get_N(sortedContigLength_LIST, 50))))
-print('Contig N90:' + '\t' + '\t'.join(map(str, get_N(sortedContigLength_LIST, 90))))
-
-fout = open(infile + '.' + 'lengthDistribution', 'w')
-for N in range(1, 101):
-    N_length = get_N(sortedContigLength_LIST, N)
-    fout.write(str(N) + '\t' + '\t'.join(map(str,(N_length))) + '\n')
+#log
+fout = open(opt.INPUT + '.log', 'w')
+fout.write('Number of sequences:'  + '\t' + str(statistics_Length.get_lengthN()) + '\n')
+fout.write('Total bases:'  + '\t' + str(statistics_Length.get_total()) + '\n')
+fout.write('N50(L50):'  + '\t' + '\t'.join(map(str,(statistics_Length.get_N(50)))) + '\n')
+fout.write('N90(L90):'  + '\t' + '\t'.join(map(str,(statistics_Length.get_N(90)))) + '\n')
+fout.write('Min length:'  + '\t' + str(statistics_Length.get_min()) + '\n')
+fout.write('Max length:'  + '\t' + str(statistics_Length.get_max()) + '\n')
 fout.close()
 
+#N1 ~ N100, L1 ~ N100
+fout = open(infile + '.' + 'NL', 'w')
+for N in range(1, 101):
+    fout.write('N' + str(N) + '(L' + str(N) + ')' + '\t' + '\t'.join(map(str,(statistics_Length.get_N(N)))) + '\n')
+fout.close()
+
+#1kb count
+fout = open(opt.INPUT + '.count.1kb', 'w')
+count_LIST, sum_LIST = statistics_Length.get_count(lambda x: x/1000)
+for countIDX, (count, sum) in enumerate(zip(count_LIST, sum_LIST)):
+    fout.write('\t'.join(map(str,[countIDX, count, sum])) + '\n')
+fout.close()
+
+#1kb count
+fout = open(opt.INPUT + '.count.1mb', 'w')
+count_LIST, sum_LIST = statistics_Length.get_count(lambda x: x/1000000)
+for countIDX, (count, sum) in enumerate(zip(count_LIST, sum_LIST)):
+    fout.write('\t'.join(map(str,[countIDX, count, sum])) + '\n')
+fout.close()
 
 import math
-
-logCount_LIST = [0]*(int(math.log2(maxContigLength)) + 1)
-logSum_LIST   = [0]*(int(math.log2(maxContigLength)) + 1)
-for contigLength in sortedContigLength_LIST:
-    logCountIDX = int(math.log2(contigLength))
-    logCount_LIST[logCountIDX] += 1
-    logSum_LIST[logCountIDX]   += contigLength
-
-fout = open(infile + '.' + 'logCount', 'w')
-for logCountIDX, (logCount, logSum) in enumerate(zip(logCount_LIST, logSum_LIST)):
-    fout.write('\t'.join(map(str, [logCountIDX, logCount, logSum])) + '\n')
+#log count
+fout = open(opt.INPUT + '.count.log2', 'w')
+count_LIST, sum_LIST = statistics_Length.get_count(lambda x: math.log2(x))
+for countIDX, (count, sum) in enumerate(zip(count_LIST, sum_LIST)):
+    fout.write('\t'.join(map(str,[countIDX, count, sum])) + '\n')
 fout.close()
